@@ -14,7 +14,10 @@
 		var old_x = 0;
 		var old_y = 0;
 		
-		var walking_scalar=0.2;
+		var walking_scalar=1.2;
+		var stop_circle=36;
+		var line_width=2.8;		
+
 		var latest_x = 0;
 		var latest_y = 0;
 		var walking_flag=0;
@@ -75,13 +78,20 @@
 					if(canvas.getContext){
 						var context = canvas.getContext('2d');
 						context.fillStyle = 'rgba(51,204,255,0.2)';
-						context.arc(old_x, old_y, 22, 0, Math.PI*2, false);
+						context.arc(old_x, old_y, stop_circle, 0, Math.PI*2, false);
 						context.fill();
 					}
 					
 					stop_count=0;
 				}
-
+				
+				var canvas1 = document.getElementById('canvas1');
+				if(canvas1.getContext){
+					var context = canvas1.getContext('2d');
+					if(latest_x > canvas1.width * 0.85 || latest_x < canvas1.width * 0.15 || latest_y > canvas1.height * 0.85 || latest_y < canvas1.height *0.15){
+						modify(canvas1,context);
+					}
+				}
 		  	}
         }, true);
 		window.addEventListener('deviceorientation', function(event2) {
@@ -107,15 +117,14 @@
 			var canvas = document.getElementById('canvas1');
 			if(canvas.getContext){
 				var context = canvas.getContext('2d');
-				context.strokeStyle = 'rgba(200,200,200,0.5)';
-				context.lineWidth = 1.8;
+				context.strokeStyle = 'rgba(200,200,200,0.8)';
+				context.lineWidth = line_width;
 				
 				context.beginPath();
 				context.moveTo(x1,y1);
 				context.lineTo(x2,y2);
 				context.closePath();
 				context.stroke();
-
 			}
 		}
 		
@@ -129,7 +138,6 @@
 			}
 		}
 
-
 		function change_en(){
 			var val = document.getElementById("modal_text").innerHTML = "<div id=\"modal_en\">Locus Log use only device senseors.This app doesn't use any GPS or Wifi.So, you can save your locus data even if you are in the underground or indoor.And your locus data doesn't send anywhere, only in your device.</div></div>";
 		}
@@ -137,6 +145,53 @@
 		function change_jp(){
 			var val = document.getElementById("modal_text").innerHTML = "<div id=\"modal_jp\">本アプリはデバイスのセンサーのみを使用しております。GPSやWifiを利用しておりません。そのため、屋内や狭い領域など、どこでもあなたの移動データを取得することができ、かつ、あなたのデータはどこにも送信されずあなたのデバイス内のみに保存されます。</div>";
 		}
+
+		function modify(){
+			var canvas1 = document.getElementById('canvas1');
+			if(canvas1.getContext){
+				var context = canvas1.getContext('2d');
+
+				var img_png_src = canvas1.toDataURL("image/png");
+				var image2 = new Image();
+				image2.src = img_png_src;
+
+				context.clearRect(0,0,canvas1.width,canvas1.height)
+
+				image2.onload = function() {
+					context.drawImage(image2,canvas1.width/4,canvas1.height/4,canvas1.width/2,canvas1.height/2);
+    			}
+
+				walking_scalar = walking_scalar/2;
+				stop_circle = stop_circle/2;
+				line_width = line_width/2;
+
+				if(old_x > canvas1.width/2 && old_y > canvas1.height/2 ){
+					old_x = (old_x - canvas1.width/2)/2 + canvas1.width/2;
+					old_y = (old_y - canvas1.height/2)/2 + canvas1.height/2;
+					latest_x = old_x;
+					latest_y = old_y;
+				}
+				else if(old_x < canvas1.width/2 && old_y > canvas1.height/2 ){
+					old_x = canvas1.width/2 - (canvas1.width/2 - old_x)/2;
+					old_y = (old_y - canvas1.height/2)/2 + canvas1.height/2;
+					latest_x = old_x;
+					latest_y = old_y;
+				}
+				else if(old_x > canvas1.width/2 && old_y < canvas1.height/2 ){
+					old_x = (old_x - canvas1.width/2)/2 + canvas1.width/2;
+					old_y = canvas1.height/2 - (canvas1.height/2 - old_y)/2;
+					latest_x = old_x;
+					latest_y = old_y;
+				}
+				else {
+					old_x = canvas1.width/2 - (canvas1.width/2 - old_x)/2;
+					old_y = canvas1.height/2 - (canvas1.height/2 - old_y)/2;
+					latest_x = old_x;
+					latest_y = old_y;
+				}
+			}
+	    }
+
     </script>
   </head>
   <body onLoad="get_canvas()">
