@@ -16,15 +16,17 @@
 		
 		var walking_scalar=1.2;
 		var stop_circle=36;
-		var line_width=2.8;		
+		var line_width=2.4;		
 
 		var latest_x = 0;
 		var latest_y = 0;
 		var walking_flag=0;
 		
 		var stop_count=0;
+		var stop_count_limited = 100;
 
 		var pause_flag=0;
+		var blur_degree = 5;
 
 		function get_canvas(){
 			var canvas1 = document.getElementById('canvas1');
@@ -61,7 +63,22 @@
 					if( (t_z[0] + t_z[1] + t_z[2] + t_z[3] + t_z[4] )/ (t_z[5] + t_z[6] + t_z[7] + t_z[8] + t_z[9] + 0.000001) > 1.05 || 
 					(t_z[0] + t_z[1] + t_z[2] + t_z[3] + t_z[4] )/ (t_z[5] + t_z[6] + t_z[7] + t_z[8] + t_z[9] + 0.000001) < 0.95 ){
 						result3.innerHTML =  "motion：walking";
-						walking_flag = 1;				
+						walking_flag = Math.abs((t_z[0] + t_z[1] + t_z[2] + t_z[3] + t_z[4] )/ (t_z[5] + t_z[6] + t_z[7] + t_z[8] + t_z[9] + 0.000001)-1);				
+						if(stop_count>1){
+							var canvas = document.getElementById('canvas1');
+							if(canvas.getContext){
+								var context = canvas.getContext('2d');
+								context.shadowBlur = blur_degree*2;
+								context.shadowColor = 'rgb(81,234,255)';
+								context.fillStyle = 'rgba(51,204,255,0.2)';
+	
+								if(stop_count > stop_count_limited) stop_count=stop_count_limited;
+								context.arc(old_x, old_y, stop_circle*stop_count/20, 0, Math.PI*2, false);
+								context.fill();
+							}							
+							stop_count=0;
+						}
+
 						stop_count=0;
 					}else{
 						result3.innerHTML =  "motion：stop";
@@ -71,20 +88,7 @@
 
 					count = 0;
 				}
-				
-				
-				if(stop_count>20){
-					var canvas = document.getElementById('canvas1');
-					if(canvas.getContext){
-						var context = canvas.getContext('2d');
-						context.fillStyle = 'rgba(51,204,255,0.2)';
-						context.arc(old_x, old_y, stop_circle, 0, Math.PI*2, false);
-						context.fill();
-					}
-					
-					stop_count=0;
-				}
-				
+								
 				var canvas1 = document.getElementById('canvas1');
 				if(canvas1.getContext){
 					var context = canvas1.getContext('2d');
@@ -103,22 +107,30 @@
 				result2.innerHTML = 
 				  "degree："+ Math.round(alpha * 10) / 10;
 				
-				if(walking_flag == 1){
+				if(walking_flag > 0){
 					old_x = old_x + walking_scalar *  Math.cos( (-1) * alpha.toFixed(1) * Math.PI / 180 );
 					old_y = old_y + walking_scalar *  Math.sin( (-1) * alpha.toFixed(1) * Math.PI / 180 );
 					latest_x = old_x + walking_scalar *  Math.cos( (-1) * alpha.toFixed(1) * Math.PI  / 180 );
 					latest_y = old_y + walking_scalar *  Math.sin(  (-1) * alpha.toFixed(1) * Math.PI  / 180 );
-					drawLine(old_x, old_y, latest_x , latest_y);
+					drawLine(old_x, old_y, latest_x , latest_y, walking_flag);
 				}
 			}
 		}, true);
 
-		function drawLine(x1,y1,x2,y2){
+		function drawLine(x1,y1,x2,y2,walking_flag){
 			var canvas = document.getElementById('canvas1');
 			if(canvas.getContext){
 				var context = canvas.getContext('2d');
-				context.strokeStyle = 'rgba(200,200,200,0.8)';
+
+				var red_degree = 100+Math.ceil(walking_flag*60);
+				if(red_degree > 255) red_degree = 255;
+				var blue_degree = 100-Math.ceil(walking_flag*60);
+				if(blue_degree < 50) blue_degree = 50;
+
 				context.lineWidth = line_width;
+				context.shadowBlur = blur_degree;
+				context.shadowColor = 'rgb('+ (red_degree+30) +',130,'+ (blue_degree+30) +')';
+				context.strokeStyle = 'rgba('+ red_degree +',100,'+ blue_degree +',0.8)';
 				
 				context.beginPath();
 				context.moveTo(x1,y1);
@@ -164,6 +176,8 @@
 				walking_scalar = walking_scalar/2;
 				stop_circle = stop_circle/2;
 				line_width = line_width/2;
+				stop_count_limited = stop_count_limited/2;
+				blur_degree = Math.ceil(blur_degree/2);
 
 				if(old_x > canvas1.width/2 && old_y > canvas1.height/2 ){
 					old_x = (old_x - canvas1.width/2)/2 + canvas1.width/2;
