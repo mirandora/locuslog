@@ -4,7 +4,7 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="initial-scale=1.0"/>
     <link rel="stylesheet" type="text/css" href="main.css">
-	<title>LOCUS LOG</title>
+	<title>Locus Log</title>
     <script>
 		var t_z = [0,0,0,0,0,0,0,0,0,0];
 		var count = 0;
@@ -16,14 +16,14 @@
 		
 		var walking_scalar=1.2;
 		var stop_circle=36;
-		var line_width=2.4;		
+		var line_width=2;		
 
 		var latest_x = 0;
 		var latest_y = 0;
 		var walking_flag=0;
 		
 		var stop_count=0;
-		var stop_count_limited = 100;
+		var stop_count_limited = 80;
 
 		var pause_flag=0;
 		var blur_degree = 5;
@@ -122,16 +122,13 @@
 			if(canvas.getContext){
 				var context = canvas.getContext('2d');
 
-				var red_degree = 100+Math.ceil(walking_flag*60);
-				if(red_degree > 255) red_degree = 255;
-				var blue_degree = 100-Math.ceil(walking_flag*60);
-				if(blue_degree < 50) blue_degree = 50;
+				context.lineWidth = line_width * (walking_flag *10);
+				if(context.lineWidth > 5) context.lineWidth = 5;
 
-				context.lineWidth = line_width;
 				context.shadowBlur = blur_degree;
-				context.shadowColor = 'rgb('+ (red_degree+30) +',130,'+ (blue_degree+30) +')';
-				context.strokeStyle = 'rgba('+ red_degree +',100,'+ blue_degree +',0.8)';
-				
+				context.shadowColor = 'rgb(81,234,255)';
+				context.strokeStyle = 'rgba(51,204,255,0.5)';
+
 				context.beginPath();
 				context.moveTo(x1,y1);
 				context.lineTo(x2,y2);
@@ -207,8 +204,8 @@
 	    }
 
     </script>
-  </head>
-  <body onLoad="get_canvas()">
+</head>
+<body onLoad="get_canvas()">
 	<div class="wrapper">
 		<center><ul id="menu">
 			<li id="pause_sw"><a href="javascript:void(0)" onclick="pause_func()">PAUSE</a></li>
